@@ -64,5 +64,5 @@ new_folder = home / catalog
 if not new_folder.exists():
     new_folder.mkdir()
 for f in home.glob('*.txt'):
-    path_destination = Path(home / catalog) / f.name
+    path_destination = Path(new_folder) / f.name
     f.replace(path_destination)
