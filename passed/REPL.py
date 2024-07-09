@@ -37,7 +37,7 @@ def dist():
         if i[0] == first_c:
             city_1 = (float(i[1]),float(i[2]))
             n1 += 1
-    for j in row:
+    for j in rows():
         if j[0] == second_c:
             city_2 = (float(j[1]), float(j[2]))
             n2 += 1
