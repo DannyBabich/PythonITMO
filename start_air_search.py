@@ -9,13 +9,12 @@ class start_air_search:
         self.convert_lst = self.open_file()
         return self.convert_lst
 
-    def open_file (self):
+    def open_file(self):
         import csv
         file = 'airports.csv'
         self.lst = []
         with open(file, 'r') as fl:
             reader = csv.reader(fl)
-            self.lst = []
             for row in reader:
                 for elem in row:
                     self.lst.append(elem.split('\t'))
@@ -33,13 +32,8 @@ class start_air_search:
                     pass
         return ('\n'.join(map(str,(final_lst))))
 
-    def __str__(self) -> str:
-
-        return f' Аэропорты следующих городов находятся в границах указанных Вами координат: \n {self.model()} '
-
-
-
-#print(start_air_search(min_lat = -50.00, max_lat = 100.00, min_long = -100.00, max_long = 30.00))
+    def __str__(self):
+        return f' Аэропорты следующих городов находятся в границах указанных Вами координат: \n {self.model()}'
 
 
 
@@ -148,13 +142,15 @@ class Ui_Search(start_air_search):
         self.search.clicked.connect(self.result)
 
     def result(self):
-        self.output_info.setText(str(start_air_search(min_lat = float(self.min_lat.text()), max_lat = float(self.max_lat.text()), min_long = float(self.min_lon.text()), max_long = float(self.max_lon.text()))))
-
+        try:
+            self.output_info.setText(str(start_air_search(min_lat = float(self.min_lat.text()), max_lat = float(self.max_lat.text()), min_long = float(self.min_lon.text()), max_long = float(self.max_lon.text()))))
+        except ValueError:
+            pass
 
 
     def retranslateUi(self, Search):
         _translate = QtCore.QCoreApplication.translate
-        Search.setWindowTitle(_translate("Search", "Поиск Аэропортов"))
+        Search.setWindowTitle(_translate("Search", "Поиск Аэропортов v.0.0.1b"))
         self.label.setText(_translate("Search", "Выберите диапазон координат"))
         self.search.setText(_translate("Search", "Поиск"))
         self.output_info.setText(_translate("Search", " "))
@@ -162,13 +158,3 @@ class Ui_Search(start_air_search):
         self.label_4.setText(_translate("Search", "Выберите максимальную широту(max 180)"))
         self.label_5.setText(_translate("Search", "Выберите минимальную долготу(min -180)"))
         self.label_6.setText(_translate("Search", "Выберите максимальную долготу(max 180)"))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtWidgets.QApplication(sys.argv)
-    Search = QtWidgets.QMainWindow()
-    ui = Ui_Search(0,0,0,0)
-    ui.setupUi(Search)
-    Search.show()
-    sys.exit(app.exec_())
