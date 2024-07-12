@@ -105,7 +105,7 @@ if __name__ == '__main__':
 
 import time
 
-class Time(object):
+class Time4(object):
     def __init__(self, hr, min, sec):
         self.hr = int(hr)
         self.min = int(min)
@@ -148,6 +148,6 @@ def new_time(time_1, time_2):
     print (f'{new_hr}:{new_min}:{new_sec}')
 
 if __name__ == '__main__':
-    now = Time(time.strftime('%H'),  time.strftime('%M'), time.strftime('%S'))
-    add_time = Time(50,40,80)
+    now = Time4(time.strftime('%H'),  time.strftime('%M'), time.strftime('%S'))
+    add_time = Time4(50,40,80)
     new_time(now.output(), add_time.output())
