@@ -1,12 +1,13 @@
 from PyQt5 import QtWidgets
-import air
+import UI_AIR
 
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    StackedWidget = QtWidgets.QStackedWidget()
-    ui = air.Ui_StackedWidget()
-    ui.setupUi(StackedWidget)
-    StackedWidget.show()
+    AirportSearch = QtWidgets.QStackedWidget()
+    ui = UI_AIR.Ui_AirportSearch()
+    ui.setupUi(AirportSearch)
+    AirportSearch.show()
     sys.exit(app.exec_())
+
 
