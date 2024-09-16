@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}Список воздушных судов{% endblock %}
+
+{% block content %}
+    <h1 class="mt-4">Список воздушных судов</h1>
+
+    <!-- Форма поиска -->
+        <form id="search-form" method="GET" action="{% url 'search_aircraft' %}" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <input type="text" name="q" class="form-control" placeholder="Поиск по позывному или стране" value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-3">
+            <input type="number" step="any" id="center_lat" name="center_lat" class="form-control" placeholder="Широта центра (необязательно)" value="{{ request.GET.center_lat }}">
+        </div>
+        <div class="col-md-3">
+            <input type="number" step="any" id="center_lon" name="center_lon" class="form-control" placeholder="Долгота центра (необязательно)" value="{{ request.GET.center_lon }}">
+        </div>
+        <div class="col-md-2">
+            <input type="number" step="any" id="radius" name="radius" class="form-control" placeholder="Радиус (миль)" value="{{ request.GET.radius }}">
+        </div>
+        <div class="col-md-2 d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Искать</button>
+        </div>
+        <div class="col-md-2 d-grid gap-2">
+            <a href="{% url 'aircraft_list' %}" class="btn btn-secondary">Сбросить</a>
+        </div>
+    </form>
+    
+    <div id="error-message" class="text-danger my-3"></div>
+    
+    <!-- Ограничение отображения результатов поиска -->
+    {% if page_obj %}
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ICAO24</th>
+                    <th>Позывной</th>
+                    <th>Страна</th>
+                    <th>Долгота</th>
+                    <th>Широта</th>
+                    <th>Высота</th>
+                    <th>Скорость</th>
+                    <th>Направление</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aircraft in page_obj %}
+                <tr>
+                    <td>{{ aircraft.icao24 }}</td>
+                    <td>{{ aircraft.callsign }}</td>
+                    <td>{{ aircraft.origin_country }}</td>
+                    <td>{{ aircraft.longitude }}</td>
+                    <td>{{ aircraft.latitude }}</td>
+                    <td>{{ aircraft.altitude }}</td>
+                    <td>{{ aircraft.velocity }}</td>
+                    <td>{{ aircraft.heading }}</td>
+                    <td><a href="{% url 'aircraft_detail' aircraft.icao24 %}" class="btn btn-info">Подробнее</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+        <!-- Пагинация -->
+        <nav aria-label="Навигация по страницам">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1">Первая</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Предыдущая</a></li>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Следующая</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Последняя</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% else %}
+        <p>Результаты не найдены. Измените параметры поиска.</p>
+    {% endif %}
+
+    <!-- Карта для визуализации положения воздушных судов -->
+    <div id="map" class="my-5"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.getElementById('search-form').addEventListener('submit', function(event) {
+            var radiusElement = document.getElementById('radius');
+            var centerLatElement = document.getElementById('center_lat');
+            var centerLonElement = document.getElementById('center_lon');
+            var errorMessage = document.getElementById('error-message');
+        
+            // Проверяем, существуют ли элементы перед их использованием
+            var radius = radiusElement ? radiusElement.value : null;
+            var centerLat = centerLatElement ? centerLatElement.value : null;
+            var centerLon = centerLonElement ? centerLonElement.value : null;
+        
+            // Выводим значения переменных для отладки
+            console.log('Radius: ', radius);
+            console.log('Center Latitude: ', centerLat);
+            console.log('Center Longitude: ', centerLon);
+        
+            // Очистить сообщение об ошибке
+            if (errorMessage) {
+                errorMessage.innerHTML = '';
+            }
+            console.log('Error message cleared.');
+        
+            // Если введен радиус, проверяем наличие широты и долготы
+            if (radius && (!centerLat || !centerLon)) {
+                event.preventDefault();
+                if (errorMessage) {
+                    errorMessage.innerHTML = "Если вы ввели радиус, необходимо также указать широту и долготу.";
+                }
+                console.log('Ошибка: радиус указан, но широта и долгота отсутствуют.');
+                return;
+            }
+        
+            // Если введены широта и долгота, радиус может быть необязательным
+            if ((centerLat && !centerLon) || (!centerLat && centerLon)) {
+                event.preventDefault();
+                if (errorMessage) {
+                    errorMessage.innerHTML = "Если вы ввели широту или долготу, нужно указать оба значения.";
+                }
+                console.log('Ошибка: указаны либо только широта, либо только долгота.');
+                return;
+            }
+        
+            // Если все проверки пройдены
+            console.log('Форма отправлена корректно.');
+        });
+
+
+        var map = L.map('map').setView([51.505, -0.09], 2);  // Устанавливаем начальное положение карты
+    
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+    
+        // Очистка старых маркеров перед добавлением новых
+        map.eachLayer(function (layer) {
+            if (layer instanceof L.Marker) {
+                map.removeLayer(layer);
+            }
+        });
+    
+        {% for aircraft in aircrafts %}
+        if ({{ aircraft.latitude }} && {{ aircraft.longitude }}) {
+            var lastContactTime = "{{ aircraft.last_contact|date:'Y-m-d H:i' }}";  // Время последнего контакта
+            L.marker([{{ aircraft.latitude }}, {{ aircraft.longitude }}]).addTo(map)
+                .bindPopup("<b>{{ aircraft.callsign }}</b><br>{{ aircraft.origin_country }}<br>Последний контакт: " + lastContactTime).openPopup();
+        }
+        {% endfor %}
+    </script>
+{% endblock %}

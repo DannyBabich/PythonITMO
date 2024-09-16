@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+
+{% block title %}Результаты поиска{% endblock %}
+
+{% block content %}
+    <h1 class="mt-4">Результаты поиска</h1>
+
+    <!-- Форма поиска -->
+    <form id="search-form" method="GET" action="{% url 'search_aircraft' %}" class="row g-3 mb-4">
+        <div class="col-md-3">
+            <input type="text" name="q" class="form-control" placeholder="Поиск по позывному или стране (обязательно)" value="{{ request.GET.q }}" required>
+        </div>
+        <div class="col-md-3">
+            <input type="number" step="any" name="center_lat" id="center_lat" class="form-control" placeholder="Широта центра (необязательно)" value="{{ request.GET.center_lat }}">
+        </div>
+        <div class="col-md-3">
+            <input type="number" step="any" name="center_lon" id="center_lon" class="form-control" placeholder="Долгота центра (необязательно)" value="{{ request.GET.center_lon }}">
+        </div>
+        <div class="col-md-2">
+            <input type="number" step="any" name="radius" id="radius" class="form-control" placeholder="Радиус (миль)" value="{{ request.GET.radius }}">
+        </div>
+        <div class="col-md-2 d-grid gap-2">
+            <button type="submit" class="btn btn-primary">Искать</button>
+        </div>
+        <div class="col-md-2 d-grid gap-2">
+            <a href="{% url 'search_aircraft' %}" class="btn btn-secondary">Сбросить ввод</a>
+        </div>
+        <div class="col-md-2 d-grid gap-2">
+            <a href="{% url 'aircraft_list' %}" class="btn btn-secondary">Вернуться на главную</a>
+        </div>
+    </form>
+
+    <!-- Сообщение об ошибке -->
+    <div id="error-message" class="text-danger my-3"></div>
+
+    {% if page_obj %}
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ICAO24</th>
+                    <th>Позывной</th>
+                    <th>Страна</th>
+                    <th>Долгота</th>
+                    <th>Широта</th>
+                    <th>Высота</th>
+                    <th>Скорость</th>
+                    <th>Направление</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for aircraft in page_obj %}
+                <tr>
+                    <td>{{ aircraft.icao24 }}</td>
+                    <td>{{ aircraft.callsign }}</td>
+                    <td>{{ aircraft.origin_country }}</td>
+                    <td>{{ aircraft.longitude }}</td>
+                    <td>{{ aircraft.latitude }}</td>
+                    <td>{{ aircraft.altitude }}</td>
+                    <td>{{ aircraft.velocity }}</td>
+                    <td>{{ aircraft.heading }}</td>
+                    <td><a href="{% url 'aircraft_detail' aircraft.icao24 %}" class="btn btn-info">Подробнее</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Пагинация сохраняет параметры поиска -->
+        <nav aria-label="Навигация по страницам">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ request.GET.q }}&center_lat={{ request.GET.center_lat }}&center_lon={{ request.GET.center_lon }}&radius={{ request.GET.radius }}&page=1">Первая</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ request.GET.q }}&center_lat={{ request.GET.center_lat }}&center_lon={{ request.GET.center_lon }}&radius={{ request.GET.radius }}&page={{ page_obj.previous_page_number }}">Предыдущая</a>
+                </li>
+                {% endif %}
+
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ request.GET.q }}&center_lat={{ request.GET.center_lat }}&center_lon={{ request.GET.center_lon }}&radius={{ request.GET.radius }}&page={{ page_obj.next_page_number }}">Следующая</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?q={{ request.GET.q }}&center_lat={{ request.GET.center_lat }}&center_lon={{ request.GET.center_lon }}&radius={{ request.GET.radius }}&page={{ page_obj.paginator.num_pages }}">Последняя</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+    {% else %}
+        <p>Результаты не найдены. Попробуйте изменить параметры поиска.</p>
+    {% endif %}
+
+    <!-- Карта для визуализации положения воздушных судов по результатам поиска -->
+    <div id="map" class="my-5"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        // Проверка перед отправкой формы
+        document.getElementById('search-form').addEventListener('submit', function(event) {
+            var radius = document.getElementById('radius').value;
+            var centerLat = document.getElementById('center_lat').value;
+            var centerLon = document.getElementById('center_lon').value;
+            var errorMessage = document.getElementById('error-message');
+
+            // Очистить сообщение об ошибке
+            errorMessage.innerHTML = '';
+
+            // Если введен радиус, проверяем наличие широты и долготы
+            if (radius && (!centerLat || !centerLon)) {
+                event.preventDefault();
+                errorMessage.innerHTML = "Если вы ввели радиус, необходимо также указать широту и долготу.";
+                return;
+            }
+
+            // Если введены широта и долгота, радиус может быть необязательным
+            if ((centerLat && !centerLon) || (!centerLat && centerLon)) {
+                event.preventDefault();
+                errorMessage.innerHTML = "Если вы ввели широту или долготу, нужно указать оба значения.";
+                return;
+            }
+        });
+
+        var map = L.map('map').setView([51.505, -0.09], 2);  // Начальное положение карты
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Очистка старых маркеров перед добавлением новых
+        map.eachLayer(function (layer) {
+            if (layer instanceof L.Marker) {
+                map.removeLayer(layer);
+            }
+        });
+
+        {% for aircraft in aircrafts %}
+        if ({{ aircraft.latitude }} && {{ aircraft.longitude }}) {
+            var lastContactTime = "{{ aircraft.last_contact|date:'Y-m-d H:i' }}";  // Время последнего контакта
+            L.marker([{{ aircraft.latitude }}, {{ aircraft.longitude }}]).addTo(map)
+                .bindPopup("<b>{{ aircraft.callsign }}</b><br>{{ aircraft.origin_country }}<br>Последний контакт: " + lastContactTime).openPopup();
+        }
+        {% endfor %}
+    </script>
+{% endblock %}

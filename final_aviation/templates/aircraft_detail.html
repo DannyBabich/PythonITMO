@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Информация о воздушном судне {{ aircraft.callsign }}</h1>
+
+    <table class="table">
+        <tr><th>ICAO24</th><td>{{ aircraft.icao24 }}</td></tr>
+        <tr><th>Позывной</th><td>{{ aircraft.callsign }}</td></tr>
+        <tr><th>Страна</th><td>{{ aircraft.origin_country }}</td></tr>
+        <tr><th>Долгота</th><td>{{ aircraft.longitude }}</td></tr>
+        <tr><th>Широта</th><td>{{ aircraft.latitude }}</td></tr>
+        <tr><th>Высота</th><td>{{ aircraft.altitude }}</td></tr>
+        <tr><th>Скорость</th><td>{{ aircraft.velocity }}</td></tr>
+        <tr><th>Направление</th><td>{{ aircraft.heading }}</td></tr>
+        <tr><th>Последний контакт</th><td>{{ aircraft.last_contact }}</td></tr>
+    </table>
+
+    <!-- Кнопка для возврата на предыдущую страницу -->
+    <a href="javascript:history.back()" class="btn btn-secondary">Назад</a>
+{% endblock %}
