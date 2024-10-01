@@ -129,8 +129,8 @@ EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 
-EMAIL_HOST_USER = 'babichdanny@yandex.ru'
-EMAIL_HOST_PASSWORD = 'bbhqfhfziltddfdi'
+EMAIL_HOST_USER = '**********+++@yandex.ru'
+EMAIL_HOST_PASSWORD = '*****************'
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
