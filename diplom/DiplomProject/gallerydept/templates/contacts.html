@@ -1,0 +1,17 @@
+{% extends 'main.html' %}
+{% block title %}<title>Контакты</title>{% endblock %}
+{% block description %}<meta name="description" content="Контакты магазина." />{% endblock %}
+{% block keywords %}
+    <meta name="keywords" content="контакты" />
+{% endblock %}
+{% block content %}
+<div id="article">
+    <h2>Контакты</h2>
+    <p>Мы находимся по адресу г. Калининград, ул. -, д. -.</p>
+    <p>Мы работаем с 09:00 до 21:00 без перерыва и выходных.</p>
+    <p>А вообще это дипломный проект</p>
+    <p>В связи с этим, данный сайт ничего в реальности не продаёт.</p>
+</div>
+<div id="map" style="width:400px; height:300px"></div>
+<script type="text/javascript" charset="utf-8" async src="https://api-maps.yandex.ru/services/constructor/1.0/js/?um=constructor%3A144274d2f9068084de1636d96c4b859c5240b2271408e9434921f33cfd0c79fe&amp;width=500&amp;height=400&amp;lang=ru_RU&amp;scroll=true"></script>
+{% endblock %}

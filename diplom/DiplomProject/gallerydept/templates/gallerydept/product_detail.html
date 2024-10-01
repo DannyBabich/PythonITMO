@@ -1,0 +1,63 @@
+{% extends 'main.html' %}
+{% block title %}<title>{{ product.title }}</title>{% endblock %}
+{% block description %}
+    <meta name="description" content="Описание и покупка {{ product.title }}." />
+{% endblock %}
+{% block keywords %}
+    <meta name="keywords" content="описание {{ product.title|lower }}, купить {{ product.title|lower }}" />
+{% endblock %}
+{% block content %}
+    <table id="hornav">
+        <tr>
+            {% load static %}
+            <td>
+                <a href="{% url 'index' %}">Главная</a>
+            </td>
+            <td>
+                <img src="{% static 'images/hornav_arrow.png' %}" alt="" />
+            </td>
+            <td>
+                <a href="{{ product.section.get_absolute_url }}">{{ product.section.title }}</a>
+            </td>
+            <td>
+                <img src="{% static 'images/hornav_arrow.png' %}" alt="" />
+            </td>
+            <td>{{ product.title }}</td>
+        </tr>
+    </table>
+    <table id="product">
+        <tr>
+            <td class="product_img">
+                <img src="{{ product.image.url }}" alt="{{ product.title }}" />
+            </td>
+            <td class="product_desc">
+                <p>Название: <span class="title">{{ product.title }}</span></p>
+                <p>Автор: <span>{{ product.author }}</span></p>
+                <p>Год создания: <span>{{ product.year }}</span></p>
+                <p>Раздел: <span>{{ product.section.title }}</span></p>
+                <p>Матерьялы: <span>{{ product.materials }}</span></p>
+                <p>Размер: <span>{{ product.size }}</span></p>
+                <p>Страна: <span>{{ product.country }}</span></p>
+                <p>Город: <span>{{ product.city }}</span></p>
+                <table>
+                    <tr>
+                        <td>
+                            <p class="price">{{ product.price }} руб.</p>
+                        </td>
+                        <td>
+                            <p>
+                                <a class="link_cart" href="{{ request.path }}?add_cart={{ product.id }}"></a>
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <p class="desc_title">Описание:</p>
+                <p class="desc">{{ product.description|linebreaksbr }}</p>
+            </td>
+        </tr>
+    </table>
+{% endblock %}

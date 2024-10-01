@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<!--<html xmlns="http://www.w3.org/1999/xhtml">-->
+<head>
+	{% block title %} <title>Интернет-магазин "GALLERY DEPT."</title>{% endblock %}
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	{% block description %}<meta name="description" content="Интернет-магазин по продаже произведений современного исскуства." />{% endblock %}
+	{% block keywords %}<meta name="keywords" content="интернет магазин, современное искусство" />{% endblock %}
+	{% load static %}
+	<link rel="stylesheet" href="{% static 'styles/main.css' %}" type="text/css" />
+	<script type="text/javascript" src="{% static 'js/functions.js' %}"></script>
+	<link href="{% static 'favicon.ico' %}" rel="shortcut icon" type="image/x-icon" />
+</head>
+<body>
+	<div id="container">
+		<div id="header">
+			<img src="{% static 'images/header.png' %}" alt="Шапка" />
+			<div>
+				<p class="white">phone:</p>
+			</div>
+			<div class="cart">
+				<p class="cart_title">Корзина</p>
+				<p class="black">Текущий заказ</p>
+				<p>В корзине <span>{{ count_in_cart }}</span> товаров<br />на сумму <span>{{ sum_in_cart }}</span> руб.</p>
+				<a href="{% url 'cart' %}">Перейти в корзину</a>
+			</div>
+		</div>
+		<div id="topmenu">
+			<ul>
+				<li>
+					<a href="{% url 'index' %}">ГЛАВНАЯ</a>
+				</li>
+				<li>
+					<img src="{% static 'images/topmenu_border.png' %}" alt="" />
+				</li>
+				<li>
+					<a href="{% url 'delivery' %}">ОПЛАТА И ДОСТАВКА</a>
+				</li>
+				<li>
+					<img src="{% static 'images/topmenu_border.png' %}" alt="" />
+				</li>
+				<li>
+					<a href="{% url 'contacts' %}">КОНТАКТЫ</a>
+				</li>
+			</ul>
+			<div id="search">
+				<form name="search" action="{% url 'search' %}" method="get">
+					<table>
+						<tr>
+							<td class="input_left"></td>
+							<td>
+								<input type="text" name="q" value="поиск" onfocus="if(this.value == 'поиск') this.value=''" onblur="if(this.value == '') this.value='поиск'" />
+							</td>
+							<td class="input_right"></td>
+						</tr>
+					</table>
+				</form>
+			</div>
+		</div>
+		<div id="content">
+			<div id="left">
+				<div class="menu">
+					<div class="header">
+						<h3>Разделы</h3>
+					</div>
+					<div class="items">
+						{% for section in sections %}
+							<p>
+								<a href="{{ section.get_absolute_url }}">{{ section.title }}</a>
+							</p>
+						{% endfor %}
+					</div>
+					<div class="bottom"></div>
+				</div>
+				<div class="menu">
+					<div class="header">
+						<h3>Пользователь</h3>
+					</div>
+					<div class="items">
+						{% if user.is_authenticated %}
+							<p>
+								<a href="{% url 'orders' %}">Заказы</a>
+							</p>
+							<p>
+<!--							<a href="{% url 'logout' %}?next={{ request.path }}">Выход</a> работает в старом django-->
+								<form action="{% url 'logout' %}" method="post">
+								{% csrf_token %}
+									<button type="submit" >Выход</button>
+								</form>
+							</p>
+						{% else %}
+							<p>
+								<a href="{% url 'login' %}?next={{ request.path }}">Вход</a>
+							</p>
+						{% endif %}
+					</div>
+					<div class="bottom"></div>
+				</div>
+			</div>
+			<div id="right">
+				{% block content %}{% endblock %}
+			</div>
+			<div class="clear"></div>
+			<div id="footer">
+				<div id="pm">
+					<table>
+						<tr>
+							<td>
+								<img src="{% static 'images/pm.png' %}" alt="Способы оплаты" />
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div id="copy">
+					<p>Copyright &copy; DannyBabich. Дипломное проектирование.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

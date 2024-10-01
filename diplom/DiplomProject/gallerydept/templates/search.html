@@ -1,0 +1,21 @@
+{% extends 'index.html' %}
+{% block title %}<title>Поиск: {{ q }}</title>{% endblock %}
+{% block description %}<meta name="description" content="Поиск: {{ q }}." />{% endblock %}
+{% block keywords %}
+<meta name="keywords" content="поиск, {{ q|lower }}" />
+{% endblock %}
+{% block header %}<h3>Поиск</h3>{% endblock %}
+{% block sort %}{% endblock %}
+{% block before_content %}
+    <div id="search_result">
+        <h2>Результаты поиска: {{ q }}</h2>
+        {% if not products %}
+           <p>Ничего не найдено</p>
+        {% endif %}
+    </div>
+{% endblock %}
+{% block main_header %}
+    {% if products %}
+        {{ block.super }}
+    {% endif %}
+{% endblock %}
